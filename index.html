@@ -13,6 +13,7 @@ Object.defineProperty(window, 'global', {value: window});
 
 window.__dirname = getProgramDir(PROGRAM).get_path();
 window.__filename = PROGRAM.get_path();
+
 window.require = file => {
   if (/^[A-Z]/.test(file))
     return file.split('.').reduce((nmsp, k) => nmsp[k], gi);
@@ -34,8 +35,9 @@ window.require = file => {
 };
 
 ARGV.forEach(arg => {
-  if (resolve(DIR, arg).query_exists(null))
-    window.require(arg);
+  const fd = resolve(DIR, arg);
+  if (fd.query_exists(null))
+    window.require(fd.get_path());
 });
 
 function resolve(dir, file) {
