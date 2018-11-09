@@ -1,0 +1,53 @@
+#!/usr/bin/env gjs
+
+/*! (c) Andrea Giammarchi - ISC */
+
+const { gi } = imports;
+const { GLib, Gio } = gi;
+const { File } = Gio;
+
+const DIR = GLib.get_current_dir();
+const PROGRAM = resolve(DIR, imports.system.programInvocationName);
+
+Object.defineProperty(window, 'global', {value: window});
+
+window.__dirname = getProgramDir(PROGRAM).get_path();
+window.__filename = PROGRAM.get_path();
+window.require = file => {
+  if (/^[A-Z]/.test(file))
+    return file.split('.').reduce((nmsp, k) => nmsp[k], gi);
+  const { __dirname, __filename } = window;
+  const fd = resolve(__dirname, file);
+  const exports = {};
+  const module = { exports };
+  window.exports = exports;
+  window.module = module;
+  window.__dirname = fd.get_parent().get_path();
+  window.__filename = fd.get_path();
+  imports.searchPath.unshift(window.__dirname);
+  try { imports[fd.get_basename().replace(/\.m?js$/, '')]; }
+  catch (error) { print(error); }
+  imports.searchPath.shift();
+  window.__dirname = __dirname;
+  window.__filename = __filename;
+  return module.exports;
+};
+
+ARGV.forEach(arg => {
+  if (resolve(DIR, arg).query_exists(null))
+    window.require(arg);
+});
+
+function resolve(dir, file) {
+  return File.new_for_path(dir).resolve_relative_path(file);
+}
+
+function getProgramDir(programFile) {
+  const info = programFile.query_info('standard::', Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null);
+  if (info.get_is_symlink()) {
+    const symlinkFile = programFile.get_parent().resolve_relative_path(info.get_symlink_target());
+    return symlinkFile.get_parent();
+  } else {
+    return programFile.get_parent();
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "gjs-require",
+  "version": "0.0.0",
+  "description": "A require like function for GJS",
+  "bin": "gjs-require",
+  "scripts": {
+    "build": "cp gjs-require index.html",
+    "test": "gjs gjs-require test/index.js || exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WebReflection/gjs-require.git"
+  },
+  "keywords": [
+    "gjs",
+    "commonjs",
+    "require",
+    "import"
+  ],
+  "author": "Andrea Giammarchi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/WebReflection/gjs-require/issues"
+  },
+  "homepage": "https://github.com/WebReflection/gjs-require#readme"
+}
