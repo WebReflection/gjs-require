@@ -5,7 +5,7 @@ A require like function for GJS
 $ ./gjs-require test/index.js
 
 gjs-require/test/index.js
-gjs-require/test/ran/dom
+gjs-require/test/ran/dom.js
 random: 0.212101615295042
 ```
 
