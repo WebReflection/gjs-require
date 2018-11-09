@@ -1,6 +1,6 @@
 {
   "name": "gjs-require",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "A require like function for GJS",
   "bin": "gjs-require",
   "scripts": {
