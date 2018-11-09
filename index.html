@@ -17,6 +17,8 @@ window.__filename = PROGRAM.get_path();
 window.require = file => {
   if (/^[A-Z]/.test(file))
     return file.split('.').reduce((nmsp, k) => nmsp[k], gi);
+  if (!/\.m?js$/.test(file))
+    file += '.js';
   const { __dirname, __filename } = window;
   const fd = resolve(__dirname, file);
   const exports = {};
