@@ -7,6 +7,7 @@ $ ./gjs-require test/index.js
 gjs-require/test/index.js
 gjs-require/test/ran/dom.js
 random: 0.212101615295042
+true
 ```
 
 ### Features

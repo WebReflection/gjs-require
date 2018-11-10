@@ -2,47 +2,49 @@
 
 /*! (c) Andrea Giammarchi - ISC */
 
-const { gi } = imports;
+const { gi, searchPath, system } = imports;
+
 const { GLib, Gio } = gi;
 const { File } = Gio;
 
 const DIR = GLib.get_current_dir();
-const PROGRAM = resolve(DIR, imports.system.programInvocationName);
+const PROGRAM = resolve(DIR, system.programInvocationName);
 const cache = Object.create(null);
 
-Object.defineProperty(window, 'global', {value: window});
+let __dirname = getProgramDir(PROGRAM).get_path();
+let __filename = PROGRAM.get_path();
 
-window.__dirname = getProgramDir(PROGRAM).get_path();
-window.__filename = PROGRAM.get_path();
-
-window.require = file => {
-  if (/^[A-Z]/.test(file))
-    return file.split('.').reduce((nmsp, k) => nmsp[k], gi);
-  if (!/\.m?js$/.test(file))
-    file += '.js';
-  const { __dirname, __filename } = window;
-  const fd = resolve(__dirname, file);
-  window.__filename = fd.get_path();
-  if (window.__filename in cache)
-    return cache[window.__filename];
-  window.__dirname = fd.get_parent().get_path();
-  const exports = {};
-  const module = { exports };
-  window.exports = exports;
-  window.module = module;
-  imports.searchPath.unshift(window.__dirname);
-  try {
-    imports[fd.get_basename().replace(/\.m?js$/, '')];
-    cache[window.__filename] = module.exports;
-  }
-  catch (error) {
-    print(error);
-  }
-  imports.searchPath.shift();
-  window.__filename = __filename;
-  window.__dirname = __dirname;
-  return module.exports;
-};
+Object.defineProperties(window, {
+  __dirname: {get: () => __dirname},
+  __filename: {get: () => __filename},
+  global: {value: window},
+  require: {value(file) {
+    if (/^[A-Z]/.test(file))
+      return file.split('.').reduce(($, k) => $[k], gi);
+    if (!/\.js$/.test(file))
+      file += '.js';
+    const fd = resolve(__dirname, file);
+    const fn = fd.get_path();
+    if (fn in cache)
+      return cache[fn];
+    const dn = fd.get_parent().get_path();
+    const _fn = __filename;
+    const _dn = __dirname;
+    const exports = {};
+    const module = { exports };
+    window.exports = exports;
+    window.module = module;
+    __filename = fn;
+    __dirname = dn;
+    searchPath.unshift(dn);
+    imports[fd.get_basename().replace(/\.js$/, '')];
+    cache[fn] = module.exports;
+    searchPath.shift();
+    __filename = _fn;
+    __dirname = _dn;
+    return module.exports;
+  }}
+});
 
 ARGV.forEach(arg => {
   const fd = resolve(DIR, arg);
