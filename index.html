@@ -2,23 +2,55 @@
 
 /*! (c) Andrea Giammarchi - ISC */
 
-const { gi, searchPath, system } = imports;
+(function (self) {'use strict';
 
-const { GLib, Gio } = gi;
-const { File } = Gio;
+  const { gi, searchPath, system } = imports;
 
-const DIR = GLib.get_current_dir();
-const PROGRAM = resolve(DIR, system.programInvocationName);
-const cache = Object.create(null);
+  const { GLib, Gio } = gi;
+  const { File } = Gio;
 
-let __dirname = getProgramDir(PROGRAM).get_path();
-let __filename = PROGRAM.get_path();
+  const cache = Object.create(null);
 
-Object.defineProperties(window, {
-  __dirname: {get: () => __dirname},
-  __filename: {get: () => __filename},
-  global: {value: window},
-  require: {value(file) {
+  const DIR = GLib.get_current_dir();
+  const MODULE = system.programInvocationName === 'gjs';
+  const PROGRAM = MODULE ? '' : resolve(DIR, system.programInvocationName);
+
+  let __dirname = MODULE ? DIR : getProgramDir(PROGRAM).get_path();
+  let __filename = MODULE ? '' : PROGRAM.get_path();
+
+  Object.defineProperties(window, {
+    __dirname: {get: () => __dirname},
+    __filename: {get: () => __filename},
+    global: {value: window},
+    require: {value: require}
+  });
+
+  self.require = require;
+
+  if (MODULE)
+    return;
+
+  ARGV.forEach(arg => {
+    const fd = resolve(DIR, arg);
+    if (fd.query_exists(null))
+      require(fd.get_path());
+  });
+
+  function getProgramDir(programFile) {
+    const info = programFile.query_info('standard::', Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null);
+    if (info.get_is_symlink()) {
+      const symlinkFile = programFile.get_parent().resolve_relative_path(info.get_symlink_target());
+      return symlinkFile.get_parent();
+    } else {
+      return programFile.get_parent();
+    }
+  }
+
+  function resolve(dir, file) {
+    return File.new_for_path(dir).resolve_relative_path(file);
+  }
+
+  function require(file) {
     if (/^[A-Z]/.test(file))
       return file.split('.').reduce(($, k) => $[k], gi);
     if (!/\.js$/.test(file))
@@ -42,26 +74,7 @@ Object.defineProperties(window, {
     searchPath.shift();
     __filename = _fn;
     __dirname = _dn;
-    return module.exports;
-  }}
-});
-
-ARGV.forEach(arg => {
-  const fd = resolve(DIR, arg);
-  if (fd.query_exists(null))
-    window.require(fd.get_path());
-});
-
-function resolve(dir, file) {
-  return File.new_for_path(dir).resolve_relative_path(file);
-}
-
-function getProgramDir(programFile) {
-  const info = programFile.query_info('standard::', Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null);
-  if (info.get_is_symlink()) {
-    const symlinkFile = programFile.get_parent().resolve_relative_path(info.get_symlink_target());
-    return symlinkFile.get_parent();
-  } else {
-    return programFile.get_parent();
+    return cache[fn];
   }
-}
+
+}(this));

@@ -4,7 +4,7 @@
   "description": "A require like function for GJS",
   "bin": "gjs-require",
   "scripts": {
-    "build": "cp gjs-require index.html && npm test",
+    "build": "cp gjs-require index.html && cp gjs-require require.js && npm test",
     "test": "gjs gjs-require test/index.js || exit 1"
   },
   "repository": {
