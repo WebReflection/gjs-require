@@ -8,6 +8,7 @@ const { File } = Gio;
 
 const DIR = GLib.get_current_dir();
 const PROGRAM = resolve(DIR, imports.system.programInvocationName);
+const cache = Object.create(null);
 
 Object.defineProperty(window, 'global', {value: window});
 
@@ -21,18 +22,25 @@ window.require = file => {
     file += '.js';
   const { __dirname, __filename } = window;
   const fd = resolve(__dirname, file);
+  window.__filename = fd.get_path();
+  if (window.__filename in cache)
+    return cache[window.__filename];
+  window.__dirname = fd.get_parent().get_path();
   const exports = {};
   const module = { exports };
   window.exports = exports;
   window.module = module;
-  window.__dirname = fd.get_parent().get_path();
-  window.__filename = fd.get_path();
   imports.searchPath.unshift(window.__dirname);
-  try { imports[fd.get_basename().replace(/\.m?js$/, '')]; }
-  catch (error) { print(error); }
+  try {
+    imports[fd.get_basename().replace(/\.m?js$/, '')];
+    cache[window.__filename] = module.exports;
+  }
+  catch (error) {
+    print(error);
+  }
   imports.searchPath.shift();
-  window.__dirname = __dirname;
   window.__filename = __filename;
+  window.__dirname = __dirname;
   return module.exports;
 };
 
