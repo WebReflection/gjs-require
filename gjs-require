@@ -62,6 +62,8 @@
     const dn = fd.get_parent().get_path();
     const _fn = __filename;
     const _dn = __dirname;
+    const saved_exports = window.exports;
+    const saved_module = window.module;
     const exports = {};
     const module = { exports };
     window.exports = exports;
@@ -74,6 +76,8 @@
     searchPath.shift();
     __filename = _fn;
     __dirname = _dn;
+    window.exports = saved_exports;
+    window.module = saved_module;
     return cache[fn];
   }
 
