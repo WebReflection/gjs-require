@@ -5,3 +5,7 @@ print(
   random ===
   require('./ran/dom')
 );
+
+const sin = require('./recursive/sin');
+print('Exported recursive.sin:' + sin);
+print('recursive.sin() result: ' + sin());
