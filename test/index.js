@@ -6,6 +6,7 @@ print(
   require('./ran/dom')
 );
 
-const sin = require('./recursive/sin');
-print('Exported recursive.sin:' + sin);
-print('recursive.sin() result: ' + sin());
+print('Recursion test');
+const {rand_sin} = require('./recursive/sin');
+print('Imported recursive.rand_sin:' + rand_sin);
+print('recursive.rand_sin() result: ' + rand_sin());

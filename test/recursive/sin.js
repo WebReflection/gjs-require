@@ -1,3 +1,4 @@
 print(__filename);
-const {random} = require('../ran/dom');
-exports.rand_sin = () => { return Math.sin(random()) };
+const random = require('./random');
+print('Imported random: ' + random);
+exports.rand_sin = () => { return Math.sin(random); };
